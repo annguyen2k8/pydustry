@@ -199,7 +199,12 @@ def main(*args: Any) -> int:
 
         except Exception:
             raise Exception("Error reading pack file: ", pack_file.path())
+        
+        def get_sprite(name: str) -> Sprite:
+            if name not in sprites:
+                print(f"Missing sprite: \"{name}\"")
             
+            return sprites.get(name, sprites["error"])
     
         schem: _Schematic = Schematics.read(Fi(args[1]))
         
@@ -217,24 +222,19 @@ def main(*args: Any) -> int:
         
         ts = time.time()
         
-        image: Image.Image = Image.new("RGBA", (schem.width * 32, schem.height * 32))
+        image: Image.Image = Image.new("RGBA", (schem.width * tilesize, schem.height * tilesize))
         
         for tile in schem.tiles:
-            
             block = tile.block
             
-            if block.name not in sprites:
-                print(f"Missing sprite for block: \"{block.name}\"")
-            
-            sprite = sprites.get(block.name, sprites["error"])
-            
             rotate: float = tile.rotation * 90 if block.rotate else 0
-            
             offset = block.sizeOffset
             draw_x = int((tile.x + offset) * tilesize)
             draw_y = int((schem.height - tile.y - block.size - offset) * tilesize)
+            draw_size = block.size * tilesize
             
-            image.paste(sprite.load_image().rotate(rotate), (draw_x, draw_y))
+            image.paste(get_sprite(block.name).load_image().resize((draw_size, draw_size)).rotate(rotate), (draw_x, draw_y ))
+            
         
         print("Done in" , f"{round(time.time() - ts)}ms")
         
