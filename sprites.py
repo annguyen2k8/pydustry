@@ -72,13 +72,13 @@ class Sprites:
     def load(packfile: _Fi) -> Sprites:
         return Sprites(packfile, packfile.parent())
 
-    def get_sprite(self, name: str) -> Optional[Sprite]:
+    def find(self, name: str, fallback: Optional[str] = None) -> Sprite:
         try:
             return self.sprites[name]
         except KeyError:
             print("Missing sprite name:", name)
         
-        return self.sprites["error"]
+        return self.find(fallback) if fallback else self.sprites["error"]
 
     class Sprite:
         imagefile: _Fi

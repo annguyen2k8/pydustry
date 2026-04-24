@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 import time
-from typing import Any
+from typing import Any, Callable, List
 
 import jpype
 import jpype.imports
@@ -19,16 +19,16 @@ if not jpype.isJVMStarted():
 
 from arc.files import Fi
 from mindustry import Vars
+from mindustry.content import Blocks, Items, Liquids
 from mindustry.core import ContentLoader, Version
 from mindustry.ctype import ContentType
 from mindustry.game import Schematics
-from mindustry.content import Blocks, Items, Liquids
 
+from models import TileData
 from protocols import _Schematic
-from sprites import Sprites
-
-tilesize: int = 32
-assets: str = "./assets/"
+from render import Renders
+from renders import *
+from variables import *
 
 
 def main(*args: Any) -> int:
@@ -48,45 +48,50 @@ def main(*args: Any) -> int:
             except:
                 pass
 
-    sprites = Sprites.load(Fi(assets + "sprites/sprites.aatls"))
-
     
     schem: _Schematic = Schematics.read(Fi(args[1]))
-    
-    # print(f"{schem.name()=}")
-    # print(f"{schem.description()=}")
-    
-    # print(f"{schem.powerProduction()=}")
-    # print(f"{schem.powerConsumption()=}")
-    
-    # requirements = schem.requirements()
-    
-    # for stack in requirements:
-    #     stack: _ItemStack
-    #     print(stack.item.name, stack.amount)
     
     ts = time.time()
     
     image: Image.Image = Image.new("RGBA", (schem.width * tilesize, schem.height * tilesize))
     
-    for tile in schem.tiles:
-        block = tile.block
-        
-        rotate: float = tile.rotation * 90 if block.rotate else 0
-        offset = block.sizeOffset
-        draw_x = int((tile.x + offset) * tilesize)
-        draw_y = int((schem.height - tile.y - block.size - offset) * tilesize)
-        draw_size = block.size * tilesize
-        
-        image.paste(sprites.get_sprite(block.name).image().resize((draw_size, draw_size)).rotate(rotate), (draw_x, draw_y))
-        
+    
+    tiles: List[TileData] = tuple(map(
+        lambda tile: TileData(
+                tile.block, tile.x, tile.y, 
+                tile.rotation * 90 if tile.block.rotate else 0,
+                tile.config,
+                int((tile.x + tile.block.sizeOffset) * tilesize),
+                int((schem.height - tile.y - tile.block.size - tile.block.sizeOffset) * tilesize),
+                tile.block.size * tilesize
+            ),
+        schem.tiles
+        ))
+    
+    
+    renders: Renders = Renders()
+    
+    def foreach_tile(callback: Callable[[BlockRender, TileData], None]):
+        for tile in tiles:
+            render = renders.get_render(tile.block, BlockRender)
+            
+            if render:
+                callback(render, tile)
+    
+    def draw_default(render: BlockRender, tile: TileData):
+        render.draw_default(image, tile, tiles)
+    
+    def draw_top_config(render: BlockRender, tile: TileData):
+        render.draw_config_top(image, tile, tiles)
+    
+    foreach_tile(draw_default)
+    foreach_tile(draw_top_config)
     
     print("Done in" , f"{round(time.time() - ts)}ms")
     
-    image.show()
+    image.show() 
     
     return 0
 
 if __name__ == "__main__":
     exit(main(*sys.argv))
-
