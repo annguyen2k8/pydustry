@@ -19,12 +19,10 @@ import draw
 class BlockRender(BaseRender):
     target: Type[Block] = Block
     texture: Image.Image
-    
+        
     
     def __init__(self):
         super().__init__()
-        
-        self.texture = Image.Image()
     
     
     @staticmethod
@@ -34,8 +32,7 @@ class BlockRender(BaseRender):
             def wrapper(render: BlockRender, image: Image.Image, tile: TileData, *args, **kwargs) -> Callable:
                 sprite: Sprites.Sprite = sprites.find(value.replace("@", str(tile.block.name)), fallback)
                 
-                if name in render.__dict__:
-                    setattr(render, name, sprite.image())
+                setattr(render, name, sprite.image())
                 
                 return func(render, image, tile, *args, **kwargs)
             
