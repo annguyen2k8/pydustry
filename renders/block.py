@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 from render import BaseRender
 from variables import *
-
+import draw
 
 class BlockRender(BaseRender):
     target: Type[Block] = Block
@@ -44,10 +44,7 @@ class BlockRender(BaseRender):
     
     @load_sprite()
     def draw_default(self, image: Image.Image, tile: TileData, tiles: List[TileData]):
-        image.paste(
-            self.texture.resize((tile.draw_size, tile.draw_size)).rotate(tile.rotate), 
-            (tile.draw_x, tile.draw_y)
-            )
+        draw.rect(image, self.texture, tile.draw_x, tile.draw_y, tile.rotate * 90)
         
         self.draw_config(image, tile, tiles)
 

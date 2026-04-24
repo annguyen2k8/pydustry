@@ -59,7 +59,7 @@ def main(*args: Any) -> int:
     tiles: List[TileData] = tuple(map(
         lambda tile: TileData(
                 tile.block, tile.x, tile.y, 
-                tile.rotation * 90 if tile.block.rotate else 0,
+                tile.rotation if tile.block.rotate else 0,
                 tile.config,
                 int((tile.x + tile.block.sizeOffset) * tilesize),
                 int((schem.height - tile.y - tile.block.size - tile.block.sizeOffset) * tilesize),
