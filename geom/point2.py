@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 import math
 
 from protocols import _JPoint2
+
 
 class Point2:
     x: int

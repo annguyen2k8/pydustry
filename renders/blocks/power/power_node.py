@@ -7,10 +7,10 @@ from jpype import JArray
 from mindustry.world import Block
 from mindustry.world.blocks.power import PowerNode
 
+from geom import Point2
 from models import TileData
 from renders.block import BlockRender
 from variables import *
-from geom import Point2
 
 
 class PowerNodeRender(BlockRender):
